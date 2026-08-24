@@ -1,0 +1,102 @@
+.TH HSH 1 "August 2026" "ALX / Holberton School" "Simple Shell Manual"
+.SH NAME
+hsh \- simple UNIX command interpreter
+.SH SYNOPSIS
+.B ./hsh
+.SH DESCRIPTION
+.B hsh
+is a simple UNIX command language interpreter that executes commands read from standard input or from a script file. It operates in both interactive and non-interactive modes.
+
+When executed without arguments, 
+.B hsh
+prompts the user with \fB($)\fR and waits for commands. When input is piped or redirected into standard input, it operates silently without displaying a prompt.
+.SH INVOCATION
+.TP
+.B Interactive Mode:
+Run the shell directly in a terminal:
+.RS
+.B $ ./hsh
+.br
+\fB($)\fR /bin/ls
+.br
+\fB($)\fR exit
+.RE
+.TP
+.B Non-interactive Mode:
+Pipe commands into the executable or redirect from a file:
+.RS
+.B $ echo "/bin/ls" | ./hsh
+.br
+.B $ ./hsh < command_file
+.RE
+.SH COMMAND EXECUTION
+The shell reads an entire line using
+.BR getline (3),
+tokenizes the input based on whitespace delimiters (spaces, tabs, newlines) using
+.BR strtok (3),
+and executes commands as follows:
+.IP 1. 4
+If the command contains a slash (\fB/\fR), it is executed directly via
+.BR execve (2).
+.IP 2. 4
+If no slash is found, the shell searches the directories listed in the \fBPATH\fR environment variable for an executable file matching the command name.
+.IP 3. 4
+A child process is created using
+.BR fork (2)
+to execute external commands, while the parent process suspends execution using
+.BR wait (2)
+or
+.BR waitpid (2)
+until the child process terminates.
+.SH BUILT-IN COMMANDS
+.B hsh
+implements the following built-in commands:
+.TP
+.B exit [status]
+Terminates the shell process. If a numeric \fIstatus\fR is provided, the shell exits with that integer code; otherwise, it exits with the status of the last executed command.
+.TP
+.B env
+Prints the current environment variables to standard output.
+.TP
+.B setenv [VARIABLE] [VALUE]
+Initializes a new environment variable or modifies an existing one.
+.TP
+.B unsetenv [VARIABLE]
+Removes an environment variable from the environment.
+.TP
+.B cd [DIRECTORY]
+Changes the current working directory of the process. If no argument is given, it defaults to the user's \fBHOME\fR directory. Using \fB-\fR switches to the previous directory (\fBOLDPWD\fR).
+.SH ENVIRONMENT
+.B hsh
+inherits and manages an array of environment variable pointers (environ). Key variables include:
+.TP
+.B PATH
+A colon-separated list of directories searched when resolving commands.
+.TP
+.B HOME
+The home directory of the current user.
+.TP
+.B OLDPWD
+The previous working directory.
+.SH RETURN VALUE
+Upon successful execution of a command, the shell returns the exit status of that command. If a command is not found or cannot be executed, an appropriate error message is printed to \fBstderr\fR and an error code (such as 127 or 126) is returned.
+.SH ERRORS
+Errors are printed to standard error in the exact format of \fB/bin/sh\fR:
+.PP
+.RS
+\fB./hsh: [line_number]: [command_name]: not found\fR
+.RE
+.SH AUTHORS
+Noura Nasser Alotaibi
+.br
+Saud Zaid Alhammadi
+.SH BUGS
+Signal handling for background jobs is not supported. Line continuation using backslashes is not implemented.
+.SH SEE ALSO
+.BR sh (1),
+.BR bash (1),
+.BR fork (2),
+.BR execve (2),
+.BR wait (2),
+.BR access (2),
+.BR getline (3)
