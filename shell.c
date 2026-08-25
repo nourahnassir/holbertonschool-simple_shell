@@ -10,6 +10,7 @@ void simple_shell(void)
     ssize_t read;
     pid_t pid;
     char *argv[2];
+    char *cmd;
 
     while (1)
     {
@@ -27,10 +28,15 @@ void simple_shell(void)
         if (line[read - 1] == '\n')
             line[read - 1] = '\0';
 
-        if (strlen(line) == 0)
+        /* تجاوز المسافات في البداية */
+        cmd = line;
+        while (*cmd == ' ' || *cmd == '\t')
+            cmd++;
+
+        if (*cmd == '\0')
             continue;
 
-        argv[0] = line;
+        argv[0] = cmd;
         argv[1] = NULL;
 
         pid = fork();
