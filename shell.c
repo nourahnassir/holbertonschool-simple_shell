@@ -5,58 +5,78 @@
  */
 void simple_shell(void)
 {
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    pid_t pid;
-    char *argv[2];
-    char *cmd;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	pid_t pid;
+	char *argv[2];
+	char *cmd;
+	int i;
 
-    while (1)
-    {
-        if (isatty(STDIN_FILENO))
-            printf("($) ");
+	while (1)
+	{
+		if (isatty(STDIN_FILENO))
+			printf("($) ");
 
-        read = getline(&line, &len, stdin);
-        if (read == -1)
-        {
-            if (isatty(STDIN_FILENO))
-                printf("\n");
-            break;
-        }
+		read = getline(&line, &len, stdin);
+		if (read == -1)
+		{
+			if (isatty(STDIN_FILENO))
+				printf("\n");
+			break;
+		}
 
-        if (line[read - 1] == '\n')
-            line[read - 1] = '\0';
+		/* إزالة حرف السطر الجديد والأطراف الفارغة */
+		for (i = 0; line[i] != '\0'; i++)
+		{
+			if (line[i] == '\n' || line[i] == '\r')
+			{
+				line[i] = '\0';
+				break;
+			}
+		}
 
-        /* تجاوز المسافات في البداية */
-        cmd = line;
-        while (*cmd == ' ' || *cmd == '\t')
-            cmd++;
+		/* تجاوز المسافات في البداية */
+		cmd = line;
+		while (*cmd == ' ' || *cmd == '\t')
+			cmd++;
 
-        if (*cmd == '\0')
-            continue;
+		if (*cmd == '\0')
+			continue;
 
-        argv[0] = cmd;
-        argv[1] = NULL;
+		/* إزالة المسافات من النهاية */
+		for (i = strlen(cmd) - 1; i >= 0; i--)
+		{
+			if (cmd[i] == ' ' || cmd[i] == '\t')
+				cmd[i] = '\0';
+			else
+				break;
+		}
 
-        pid = fork();
-        if (pid == -1)
-        {
-            perror("Error forging process");
-            exit(EXIT_FAILURE);
-        }
-        if (pid == 0)
-        {
-            if (execve(argv[0], argv, environ) == -1)
-            {
-                perror(argv[0]);
-                exit(EXIT_FAILURE);
-            }
-        }
-        else
-        {
-            wait(NULL);
-        }
-    }
-    free(line);
+		if (strlen(cmd) == 0)
+			continue;
+
+		argv[0] = cmd;
+		argv[1] = NULL;
+
+		pid = fork();
+		if (pid == -1)
+		{
+			perror("Error forging process");
+			exit(EXIT_FAILURE);
+		}
+		if (pid == 0)
+		{
+			if (execve(argv[0], argv, environ) == -1)
+			{
+				perror(argv[0]);
+				exit(EXIT_FAILURE);
+			}
+		}
+		else
+		{
+			wait(NULL);
+		}
+	}
+	free(line);
 }
