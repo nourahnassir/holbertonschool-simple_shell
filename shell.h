@@ -10,7 +10,11 @@
 
 extern char **environ;
 
-void simple_shell(void);
+int simple_shell(char *prog_name);
 char **split_line(char *line);
+int execute_command(char **argv, char *prog_name, int cmd_count);
+char *_getenv(const char *name);
+char *build_full_path(char *dir, char *cmd);
+char *find_path(char *cmd);
 
 #endif /* SHELL_H */

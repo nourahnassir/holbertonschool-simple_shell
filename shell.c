@@ -1,48 +1,67 @@
 #include "shell.h"
 
 /**
- * execute_command - Forks and executes a command
+ * execute_command - Resolves path and executes command
  * @argv: Argument vector
+ * @prog_name: Name of the shell executable
+ * @cmd_count: Command count for error formatting
  *
- * Return: Nothing.
+ * Return: Exit status of the executed command or error code
  */
-void execute_command(char **argv)
+int execute_command(char **argv, char *prog_name, int cmd_count)
 {
+	char *full_path;
 	pid_t pid;
+	int status;
+
+	full_path = find_path(argv[0]);
+	if (!full_path)
+	{
+		fprintf(stderr, "%s: %d: %s: not found\n",
+			prog_name, cmd_count, argv[0]);
+		return (127);
+	}
 
 	pid = fork();
 	if (pid == -1)
 	{
-		perror("Error forking process");
-		exit(EXIT_FAILURE);
+		perror("Error");
+		free(full_path);
+		return (1);
 	}
 	if (pid == 0)
 	{
-		if (execve(argv[0], argv, environ) == -1)
+		if (execve(full_path, argv, environ) == -1)
 		{
-			perror(argv[0]);
+			perror(prog_name);
+			free(full_path);
 			exit(EXIT_FAILURE);
 		}
 	}
 	else
 	{
-		wait(NULL);
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			status = WEXITSTATUS(status);
 	}
+	free(full_path);
+	return (status);
 }
 
 /**
- * simple_shell - Reads and executes commands from stdin
+ * simple_shell - Main shell loop
+ * @prog_name: Name of the shell program
  *
- * Return: Nothing.
+ * Return: Exit status.
  */
-void simple_shell(void)
+int simple_shell(char *prog_name)
 {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
 	char *argv[1024];
 	char *token;
-	int i;
+	int i, cmd_count = 0, last_status = 0;
 
 	while (1)
 	{
@@ -56,7 +75,7 @@ void simple_shell(void)
 				printf("\n");
 			break;
 		}
-
+		cmd_count++;
 		if (line[read - 1] == '\n')
 			line[read - 1] = '\0';
 
@@ -70,7 +89,15 @@ void simple_shell(void)
 		argv[i] = NULL;
 
 		if (i > 0)
-			execute_command(argv);
+		{
+			if (strcmp(argv[0], "exit") == 0)
+			{
+				free(line);
+				exit(last_status);
+			}
+			last_status = execute_command(argv, prog_name, cmd_count);
+		}
 	}
 	free(line);
+	return (last_status);
 }

@@ -2,11 +2,13 @@
 
 /**
  * main - Entry point for the simple shell
+ * @argc: Argument count
+ * @argv: Argument vector
  *
- * Return: 0 on success.
+ * Return: Status code.
  */
-int main(void)
+int main(int argc, char **argv)
 {
-	simple_shell();
-	return (0);
+	(void)argc;
+	return (simple_shell(argv[0]));
 }
