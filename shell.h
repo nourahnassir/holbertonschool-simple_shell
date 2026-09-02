@@ -11,8 +11,9 @@
 extern char **environ;
 
 int simple_shell(char *prog_name);
-char **split_line(char *line);
 int execute_command(char **argv, char *prog_name, int cmd_count);
+int parse_line(char *line, char **argv);
+void print_env(void);
 char *_getenv(const char *name);
 char *build_full_path(char *dir, char *cmd);
 char *find_path(char *cmd);
