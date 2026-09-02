@@ -3,6 +3,7 @@
 /**
  * split_line - Splits a string into an array of arguments
  * @line: The command line string
+ *
  * Return: Array of strings (arguments)
  */
 char **split_line(char *line)
@@ -13,7 +14,7 @@ char **split_line(char *line)
 
 	if (!tokens)
 	{
-		perror("hsh: allocation error\n");
+		perror("hsh: allocation error");
 		exit(EXIT_FAILURE);
 	}
 
@@ -29,7 +30,7 @@ char **split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				perror("hsh: allocation error\n");
+				perror("hsh: allocation error");
 				exit(EXIT_FAILURE);
 			}
 		}

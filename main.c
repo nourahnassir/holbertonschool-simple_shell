@@ -2,10 +2,11 @@
 
 /**
  * main - Entry point for the simple shell
- * Return: 0 on success
+ *
+ * Return: 0 on success.
  */
 int main(void)
 {
-    simple_shell();
-    return (0);
+	simple_shell();
+	return (0);
 }
